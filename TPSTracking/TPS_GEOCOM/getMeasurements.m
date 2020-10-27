@@ -3,7 +3,7 @@ function [D, Hz, V, ts] = getMeasurments(TPSport, distmode)
 % ts (unit: second, resolution: 0.01 s)
 
     % Get the measurement timestamp
-        fprintf('CSV_GetDateTimeCentiSec - returning angles and distance measurement\n');
+        fprintf('CSV_GetDateTimeCentiSec - returning timestamp of the TPS\n');
         req='%R1Q,5117:';
         fprintf (TPSport, req); 
         
@@ -14,9 +14,11 @@ function [D, Hz, V, ts] = getMeasurments(TPSport, distmode)
         ts_status =str2num(data.RC);
         
         if(ts_status==0)
-            ts=[data.Year data.Month data.Day data.Hour data.Minute data.Second '.' data.CentiSecond];
+            %ts=[data.Year data.Month data.Day data.Hour data.Minute data.Second '.' data.CentiSecond];
+            ts = [data.Hour data.Minute data.Second '.' data.CentiSecond];
             ts = str2double(ts);
         end
+        fprintf('timestamp = %.2f [second]\n', ts); % in second , resolution: 10ms
     
     % Take angle and distance measurments
     

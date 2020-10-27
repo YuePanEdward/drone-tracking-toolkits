@@ -99,8 +99,8 @@ while(1)
     fprintf('x = %.4f [m]; y = %.4f [m]; z = %.4f [m]\n',X,Y,Z); % in meter
     meas_cart = [meas_cart; [X,Y,Z]]; % in m, m, m
     if(count > 1)
-      delta_t= abs(ts- meas_ts(end));
-      fprintf('delta-t for this measurement = %.2f [second]\n',delta_t); % in meter
+      delta_t= ts- meas_ts(end);
+     fprintf('delta-t for this measurement = %.2f [second]\n',delta_t); % in meter
     end
     meas_ts = [meas_ts; ts];
     
