@@ -8,10 +8,10 @@ clear; clc;
 
 %%
 %COM port number
-COMPort = '/dev/ttyUSB0';  %on Linux
+COMPort = '/dev/ttyUSB1';  %on Linux
 %COMPort = 'COM3';         %on Windows
-%dB = 115200;
-dB=9600;
+dB = 115200;
+%dB=9600;
 
 %%
 % PRSIM TYPE

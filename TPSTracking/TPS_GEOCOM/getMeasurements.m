@@ -1,4 +1,5 @@
 function [D, Hz, V] = getMeasurments(TPSport, distmode)
+% getMeasurments: get the measurement in spherical coordinate system with the timestamp
 
     if ~isempty(distmode)   
         fprintf('TMC_GetAngle - returning angles and distance measurement\n');
