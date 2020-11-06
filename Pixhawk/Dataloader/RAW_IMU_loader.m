@@ -12,51 +12,42 @@ fclose(fid);
 
 imu_measure_count=0;
 
+time_boot_ms=[];
 time_usec=[];
-xgyro=[];
-ygyro=[];
-zgyro=[];
 xacc=[];
 yacc=[];
 zacc=[];
-eg=[];
-ea=[];
-t=[];
-gh=[];
-ah=[];
-ghz=[];
-ahz=[];
+xgyro=[];
+ygyro=[];
+zgyro=[];
+xmag=[];
+ymag=[];
+zmag=[];
 
 for i=1:size(raw_data,1)
    current_str = raw_data{i};
    len_str = size(current_str,2);
-   if (len_str < 4)
+   if (len_str < 7)
        continue; 
    end
-   current_str_head = current_str(1:4);
+   current_str_head = current_str(1:7);
    
-   % Read IMU data
-   % IMU,QffffffIIfBBHH,TimeUS,GyrX,GyrY,GyrZ,AccX,AccY,AccZ,EG,EA,T,GH,AH,GHz,AHz
-   % selecting from one of the sets below
-   %if(current_str_head == 'IMU,')
-   %if(current_str_head == 'IMU2')
-   if(current_str_head == 'IMU3')
+   % Read raw IMU data
+   % time_boot_ms time_usec	xacc yacc zacc xgyro ygyro zgyro xmag ymag zmag
+   if(current_str_head == 'RAW_IMU')
        cur_str_split = split(current_str,',');
        cur_str_split = str2double(cur_str_split);
-       time_usec = [time_usec; cur_str_split(2)];
-       xgyro=[xgyro; cur_str_split(3)];
-       ygyro=[ygyro; cur_str_split(4)];
-       zgyro=[zgyro; cur_str_split(5)];
-       xacc=[xacc; cur_str_split(6)];
-       yacc=[yacc; cur_str_split(7)];
-       zacc=[zacc; cur_str_split(8)];
-       eg = [eg; cur_str_split(9)];
-       ea = [ea; cur_str_split(10)];
-       t = [t; cur_str_split(11)];
-       gh = [gh; cur_str_split(12)];
-       ah = [ah; cur_str_split(13)];
-       ghz = [ghz; cur_str_split(14)];
-       ahz = [ahz; cur_str_split(15)];
+       time_boot_ms = [time_boot_ms; cur_str_split(2)];
+       time_usec = [time_usec; cur_str_split(3)];
+       xacc=[xacc; cur_str_split(4)];
+       yacc=[yacc; cur_str_split(5)];
+       zacc=[zacc; cur_str_split(6)];
+       xgyro=[xgyro; cur_str_split(7)];
+       ygyro=[ygyro; cur_str_split(8)];
+       zgyro=[zgyro; cur_str_split(9)];
+       xmag=[xmag; cur_str_split(10)];
+       ymag=[ymag; cur_str_split(11)];
+       zmag=[zmag; cur_str_split(12)];
        
        imu_measure_count=imu_measure_count+1;
    end
@@ -77,3 +68,10 @@ legend('wx','wy','wz');
 xlabel('timestamp (us)');
 ylabel('angular velocity (deg/s)'); % figure out the correct unit
 title('IMU gyroscope measurements');
+
+figure(3);
+plot(time_usec, [xmag ymag zmag]);
+legend('mx','my','mz');
+xlabel('timestamp (us)');
+ylabel('don t know'); % figure out the correct unit
+title('IMU magnetometer measurements');
