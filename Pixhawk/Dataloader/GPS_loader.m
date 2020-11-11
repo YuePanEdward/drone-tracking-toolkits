@@ -4,11 +4,14 @@ clear;
 addpath(['..' filesep '..' filesep 'common']);
 
 %% define the log file's path
-log_filename='2020-11-09 10-36-06.txt';
+%log_filename='2020-11-09 10-36-06.txt';
+%log_filename='2020-11-10 16-58-58.txt';
+log_filename='2020-11-10 17-09-50.txt';
 
-%log_file_path=['.' filesep 'test_data' filesep log_filename];
 %log_file_path=['..' filesep '..' filesep 'dataset' filesep 'indoor_dataset_2' filesep log_filename];
-log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_0' filesep log_filename];
+%log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_0' filesep log_filename];
+%log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_1' filesep log_filename];
+log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_2' filesep log_filename];
 
 fid=fopen(log_file_path);
 raw_data = textscan(fid,'%s'); % solve the problem for some log files which are segmented with an extra space or tab

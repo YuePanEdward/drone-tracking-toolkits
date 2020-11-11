@@ -6,7 +6,8 @@
 % TODO: add more comments, refine the code
 
 %%
-clear; clc;
+clear; clc; close all;
+addpath(['..' filesep '..' filesep 'common']);
 
 %% Set GeoCOM port, dB (Baud) rate
 % For TPS1200, set it in configure->interfaces setting->GSI/GeoCOM mode on
@@ -32,7 +33,7 @@ dB = 115200;
 % PRISM_MINI_ZERO = 8,
 % PRISM_USER = 9
 % PRISM_NDS_TAPE = 10
-prism_type = 7; 
+prism_type = 3; 
 
 %% Set TARGET TYPE
 % REFLECTOR_TARGET = 0
@@ -48,8 +49,8 @@ atr_state = 1; % ATR state on (1)
 % RANGE FROM 1[cc] ( =1.57079 E-06[ rad ], highest resolution, slowest) 
 % TO 100[cc] ( =1.57079 E-04[ rad ], lowest resolution, fastest)
 % For TPS-1200, the value can be a bit higher for faster performance
-hz_tol = 1.57079e-03; % Horizontal tolerance (moderate resolution) 
-v_tol = 1.57079e-03; % Vertical tolerance (moderate resolution)
+hz_tol = 1.57079e-04; % Horizontal tolerance (moderate resolution) 
+v_tol = 1.57079e-04; % Vertical tolerance (moderate resolution)
 
 %%
 % DISTANCE MEASUREMENT MODE
@@ -57,7 +58,7 @@ v_tol = 1.57079e-03; % Vertical tolerance (moderate resolution)
 % SINGLE_REF_FAST = 1,      [IR Fast]
 % SINGLE_REF_VISIBLE = 2    [LO Standard]
 % SINGLE_RLESS_VISIBLE = 3,
-% CONT_REF_STANDARD = 4,   [used, IR Tracking]
+% CONT_REF_STANDARD = 4,    [used, IR Tracking]
 % CONT_REF_FAST = 5,
 % CONT_RLESS_VISIBLE = 6,
 % AVG_REF_STANDARD = 7,
@@ -75,46 +76,64 @@ setPropertiesTPS(TPSport, prism_type, target_type, atr_state, hz_tol, v_tol);
 %% Begin tracking
 begin_time_str = datestr(now,'yyyymmddHHMMSS'); % get current time
 
-track_status = trackPrism(TPSport); % track the prism
-
 % figure for listening the keyboard event
 figure(1);
-title('Enter E on the keyboard to terminate the tracking');
 plot3(0,0,0,'o','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',12);
 hold on;
 grid on;
+axis equal;
+title('Enter E on the keyboard to terminate the tracking'); % but remember not to press 'e' too many times
 xlabel('X(m)');
 ylabel('Y(m)');
 zlabel('Z(m)');
-pause(0.1);
+pause(2.0); % pause for 1 second
 
 meas_polar=[];
 meas_cart=[];
 meas_ts=[];
-count = 0;
+meas_status =[]; %1: ok, 0: warning, -1: error
+meas_count = 0;
+
+track_status = trackPrism(TPSport); % track the prism ?begining)
+
+if(strcmpi(get(gcf,'CurrentCharacter'),'e'))
+   disp('Please press any key except for [E]'); 
+   pause(3.0);
+end
+
+% check face (if is face II, change to face I)
+% changeFace(TPSport);
+
 % keep take measurements (both in polar and cartesian coordinate systems)
 while(1)
-    count=count+1;
-    fprintf('Measurement [%s]\n',num2str(count));
+    
+    pause(0.001); % wait for 1 ms
+    
+    meas_count=meas_count+1;
+    fprintf('Measurement [%s]\n',num2str(meas_count));
     %meas_ts =[meas_ts; str2num(datestr(now,'HHMMSSFFF'))]; % get approximate timestamp
-    [D,Hr,V,ts] = getMeasurements(TPSport, distmode);
+    [D,Hr,V,ts,status] = getMeasurements(TPSport, distmode);
+    if (status<0) % error
+        break; % don't record this error measurement
+    end
+    meas_status = [meas_status,status];
     meas_polar = [meas_polar;[D,Hr,V]]; % in m, deg, deg
     [X,Y,Z]= polar2cart(D,Hr,V); % convert to cartesian coordinate system
     fprintf('x = %.4f [m]; y = %.4f [m]; z = %.4f [m]\n',X,Y,Z); % in meter
     meas_cart = [meas_cart; [X,Y,Z]]; % in m, m, m
-    if(count > 1)
+    if(meas_count > 1)
       delta_t= abs(ts- meas_ts(end));
       fprintf('delta-t for this measurement = %.2f [second]\n',delta_t); % in meter
     end
     meas_ts = [meas_ts; ts];
     
-    if strcmpi(get(gcf,'CurrentCharacter'),'e')
+    % to stop the tracking, press pause first, press [E] and then resume
+    if (meas_count > 1 && strcmpi(get(gcf,'CurrentCharacter'),'e')) 
+        disp('[E] is pressed, terminate the tracking.'); 
         break;
     end
-    %plot3(X,Y,Z,'r:o','MarkerSize',4); % plot in real-time
-    %hold on;
-
-    pause(0.001); % wait for 1ms
+ 
+    scatter3(X,Y,Z,20,'ro','filled'); % plot in real-time
 end
 
 %% save coordinates
@@ -126,21 +145,34 @@ disp('Save done');
 %% plot results
 %begin_time_str='20201106171455'; %example string (indoor dataset1)
 %begin_time_str='20201106183639'; %example string (indoor dataset2)
-%load(['results' filesep 'meas_cart_' begin_time_str '.mat'],'meas_cart');
+load(['results' filesep 'meas_cart_' begin_time_str '.mat'],'meas_cart');
 
 figure(2);
-plot3(meas_cart(2:end-1,1),meas_cart(2:end-1,2),meas_cart(2:end-1,3),'r:o','MarkerSize',4); % plot the final trajectory
-hold on;
-plot3(meas_cart(1,1),meas_cart(1,2),meas_cart(1,3),'go','MarkerFaceColor','g','MarkerSize',10); % plot the begining point
-plot3(meas_cart(end,1),meas_cart(end,2),meas_cart(end,3),'bo','MarkerFaceColor','b','MarkerSize',10); % plot the ending point
 plot3(0,0,0,'o','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',12);
+hold on;
+plottraj(meas_cart);
 grid on;
+axis equal;
 xlabel('X(m)');
 ylabel('Y(m)');
 zlabel('Z(m)');
-legend('Prism position', 'Beginning', 'Ending', 'Total station');
+legend('Total station', 'Beginning', 'Ending');
 title('Tracking result');
 
+% figure(2);
+% plot3(meas_cart(2:end-1,1),meas_cart(2:end-1,2),meas_cart(2:end-1,3),'r:o','MarkerSize',4); % plot the final trajectory
+% hold on;
+% plot3(meas_cart(1,1),meas_cart(1,2),meas_cart(1,3),'go','MarkerFaceColor','g','MarkerSize',10); % plot the begining point
+% plot3(meas_cart(end,1),meas_cart(end,2),meas_cart(end,3),'bo','MarkerFaceColor','b','MarkerSize',10); % plot the ending point
+% plot3(0,0,0,'o','MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',12);
+% grid on;
+% xlabel('X(m)');
+% ylabel('Y(m)');
+% zlabel('Z(m)');
+% legend('Prism position', 'Beginning', 'Ending', 'Total station');
+% title('Tracking result');
+
 %% TODO LISTS:
-% 3. add status (warning, accuracy...)
-% 5. deal with the pre-locking function
+% 7. check face left or face right
+% 8. set tracking tolerance
+% 9. GPS settings
