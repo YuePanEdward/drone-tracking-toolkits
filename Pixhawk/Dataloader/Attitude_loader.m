@@ -1,6 +1,9 @@
+%% Load Attitude data from flight log file
+% format: ATT,time_boot_ms,roll,pitch,yaw,rollspeed,pitchspeed,yawspeed 
 clear;
+addpath(['..' filesep '..' filesep 'common']);
 
-%log_filename='test_log2.txt';
+%% define the log file's path
 %log_filename='2020-11-06 18-33-19.txt';
 log_filename='2020-11-09 10-36-06.txt';
 
@@ -13,6 +16,7 @@ raw_data = textscan(fid,'%s'); % solve the problem for some log files which are 
 raw_data = raw_data{1,1};
 fclose(fid); 
 
+%% record data
 attitude_measure_count=0;
 
 time_us=[];
@@ -54,6 +58,7 @@ end
 
 disp(['Collect [', num2str(attitude_measure_count), '] attitude data.']); 
 
+%% Plot
 figure(1);
 plot(1e-3*time_us, 180.0/pi*[roll pitch yaw]);
 grid on;
