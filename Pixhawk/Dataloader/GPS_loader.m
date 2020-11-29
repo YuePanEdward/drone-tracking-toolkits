@@ -1,30 +1,39 @@
 %% Load GPS data from flight log file
 % format: GPS (now the measurement frequency is 5Hz)
-clear;
+% clear; clc; close all;
 addpath(['..' filesep '..' filesep 'common']);
 
 %% define the log file's path
-%log_filename='2020-11-09 10-36-06.txt';
-%log_filename='2020-11-10 16-58-58.txt';
-log_filename='2020-11-10 17-09-50.txt';
+%log_filename='2020-11-09 10-36-06.txt'; % outdoor0
+%log_filename='2020-11-10 16-58-58.txt'; % outdoor1
+%log_filename='2020-11-10 17-09-50.txt'; % outdoor2
+%log_filename='2020-11-12 16-51-33.txt'; % outdoor3
+%log_filename='2020-11-12 17-18-38.txt';  % outdoor4
+log_filename='2020-11-15 16-37-07.txt';  % outdoor5
 
 %log_file_path=['..' filesep '..' filesep 'dataset' filesep 'indoor_dataset_2' filesep log_filename];
-%log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_0' filesep log_filename];
-%log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_1' filesep log_filename];
-log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_2' filesep log_filename];
+log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_5' filesep log_filename];
 
 fid=fopen(log_file_path);
 raw_data = textscan(fid,'%s'); % solve the problem for some log files which are segmented with an extra space or tab
 raw_data = raw_data{1,1};
 fclose(fid); 
 
-%% record data
+%% Set the begin and end time 
+%for test 5 
+%begin_gps_sow = 57069.0;
+%end_gps_sow =  57118.0;
+begin_gps_sow = 0;
+end_gps_sow = inf;
+% begin_gps_sow = meas_gps_sow_tracked(1);
+% end_gps_sow = meas_gps_sow_tracked(end);
 
+%% record data
 gps_measure_count=0;
 
 time_us=[]; % (unit: us)
 gps_week=[];
-gps_sec_in_week=[]; % (unit: ms)
+time_gps_sow=[]; % gps second in week (unit: s)
 status=[];
 sat_num=[];
 hdop=[];
@@ -32,7 +41,7 @@ lat=[]; % latitude in degree
 lon=[]; % longitude in degree
 alt=[]; % altitude (height) in m
 spd=[];
-gps_unix_gap_us=[];
+gps_unix_gap=[];  % (unit: s)
 
 for i=1:size(raw_data,1)
    current_str = raw_data{i};
@@ -47,7 +56,7 @@ for i=1:size(raw_data,1)
        cur_str_split = str2double(cur_str_split);
        time_us = [time_us; cur_str_split(2)];
        status = [status; cur_str_split(3)];
-       gps_sec_in_week = [gps_sec_in_week; cur_str_split(4)];
+       time_gps_sow = [time_gps_sow; cur_str_split(4)*1e-3];  % unit: ms --> s
        gps_week = [gps_week; cur_str_split(5)];
        
        sat_num=[sat_num; cur_str_split(6)];
@@ -57,8 +66,8 @@ for i=1:size(raw_data,1)
        alt=[alt; cur_str_split(10)];
        spd=[spd; cur_str_split(11)];
        
-       gps_unix_gap_us_temp=gps_sec_in_week*1e3-time_us; % GPST - UNIXT(us)
-       gps_unix_gap_us=[gps_unix_gap_us; gps_unix_gap_us_temp]; 
+       gps_unix_gap_temp=cur_str_split(4)*1e-3-cur_str_split(2)*1e-6; % GPST - DroneT, unit: s
+       gps_unix_gap=[gps_unix_gap; gps_unix_gap_temp];  %  unit: s
        
        gps_measure_count=gps_measure_count+1;
    end
@@ -66,23 +75,29 @@ end
 
 disp(['Collect [', num2str(gps_measure_count), '] GPS data.']); 
 
-gps_unix_gap_us_mean=mean(gps_unix_gap_us); % GPST - UNIXT(us)
-gps_unix_gap_us_std=std(gps_unix_gap_us);
-fprintf('[GPS Time] - [UNIX TIME] = %8.3f ( s )\t+-%5.2f ( ms )\n',gps_unix_gap_us_mean*1e-6, gps_unix_gap_us_std*1e-3);
+gps_unix_gap_mean=mean(gps_unix_gap);  % GPST - DroneT, unit: s
+gps_unix_gap_std=std(gps_unix_gap);         % unit: s
+fprintf('[GPS Time] - [UNIX TIME] = %8.3f ( s )\t+-%5.2f ( ms )\n',gps_unix_gap_mean, gps_unix_gap_std*1e3);
 
 %% Convert to local ENU coordinate system
 [e,n,u]=blh2enu(lat,lon,alt,lat(1),lon(1),alt(1));
+points3d_enu=[e,n,u];
+
+%% Get the interested part (tracked part)
+track_index = (time_gps_sow  >=  begin_gps_sow & time_gps_sow  <=  end_gps_sow); % unit: s
+points3d_enu = points3d_enu(track_index,:);
 
 %% Plot
 figure(1);
-plottraj([e,n,u]);
+plottraj(points3d_enu);
 grid on;
 axis equal;
-xlabel('E(m)');
-ylabel('N(m)');
-zlabel('U(m)');
-legend('Start','End');
-title('GPS measurements in Local ENU');
+set(gca, 'Fontname', 'Times New Roman','FontSize',12);
+xlabel('E(m)','Fontname', 'Times New Roman','FontSize',14);
+ylabel('N(m)','Fontname', 'Times New Roman','FontSize',14);
+zlabel('U(m)','Fontname', 'Times New Roman','FontSize',14);
+legend('Start','End','Fontname', 'Times New Roman','FontSize',10);
+title('GPS measurements in Local ENU','Fontname', 'Times New Roman','FontSize',16);
 
 % figure(2);
 % plot(1e-3*time_us, [lat lon alt]);

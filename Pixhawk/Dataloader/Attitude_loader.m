@@ -1,15 +1,18 @@
 %% Load Attitude data from flight log file
 % format: ATT,time_boot_ms,roll,pitch,yaw,rollspeed,pitchspeed,yawspeed 
-clear;
+%clear; clc; close all;
 addpath(['..' filesep '..' filesep 'common']);
 
 %% define the log file's path
-%log_filename='2020-11-06 18-33-19.txt';
-log_filename='2020-11-09 10-36-06.txt';
+%log_filename='2020-11-09 10-36-06.txt'; % outdoor0
+%log_filename='2020-11-10 16-58-58.txt'; % outdoor1
+%log_filename='2020-11-10 17-09-50.txt'; % outdoor2
+%log_filename='2020-11-12 16-51-33.txt'; % outdoor3
+%log_filename='2020-11-12 17-18-38.txt';  % outdoor4
+log_filename='2020-11-15 16-37-07.txt';  % outdoor5
 
-%log_file_path=['.' filesep 'test_data' filesep log_filename];
 %log_file_path=['..' filesep '..' filesep 'dataset' filesep 'indoor_dataset_2' filesep log_filename];
-log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_0' filesep log_filename];
+log_file_path=['..' filesep '..' filesep 'dataset' filesep 'outdoor_dataset_5' filesep log_filename];
 
 fid=fopen(log_file_path);
 raw_data = textscan(fid,'%s'); % solve the problem for some log files which are segmented with an extra space or tab
@@ -60,18 +63,20 @@ disp(['Collect [', num2str(attitude_measure_count), '] attitude data.']);
 
 %% Plot
 figure(1);
-plot(1e-3*time_us, 180.0/pi*[roll pitch yaw]);
+plot(1e-6*time_us, [roll pitch yaw]);
 grid on;
-legend('roll','pitch','yaw');
-xlabel('timestamp (ms)');
-ylabel('deg');
-title('Attitude');
+set(gca, 'Fontname', 'Times New Roman','FontSize',12);
+legend('roll','pitch','yaw', 'Fontname', 'Times New Roman','FontSize',10);
+xlabel('timestamp (s)', 'Fontname', 'Times New Roman','FontSize',14);
+ylabel('deg', 'Fontname', 'Times New Roman','FontSize',14);
+title('Attitude','Fontname', 'Times New Roman','FontSize',16);
 
 figure(2);
-plot(1e-3*time_us, 180.0/pi*[des_roll des_pitch des_yaw]);
+plot(1e-6*time_us, [des_roll des_pitch des_yaw]);
 grid on;
-legend('des roll','des pitch','des yaw');
-xlabel('timestamp (ms)');
-ylabel('deg'); 
-title('Attitude Des');
+set(gca, 'Fontname', 'Times New Roman','FontSize',12);
+legend('des roll','des pitch','des yaw', 'Fontname', 'Times New Roman','FontSize',10)
+xlabel('timestamp (s)', 'Fontname', 'Times New Roman','FontSize',14);
+ylabel('deg', 'Fontname', 'Times New Roman','FontSize',14);
+title('Attitude Des', 'Fontname', 'Times New Roman','FontSize',16);
 
