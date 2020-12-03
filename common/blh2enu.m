@@ -1,7 +1,8 @@
 function [e, n, u] = blh2enu(b, l, h, ref_b, ref_l, ref_h)
 % inputs:
-% b,l,h are K * 1 vectors (ECEF coordinates of K points)
-% ref_b,ref_l,ref_h are single number(ECEF coordinate of reference station)
+% b,l,h are K * 1 vectors (ECEF coordinates of K points) , unit: deg, m
+% ref_b,ref_l,ref_h are single number(ECEF coordinate of reference
+% station), unit: deg,m
 % outputs:
 % e,n,u are K * 1 vectors (ENU coordinates of K points)
 % implemented based on Standford GPS toolbox
