@@ -14,9 +14,8 @@ qx_1 = target(1,1); qy_1 = target(1,2);
 qx_2 = target(2,1); qy_2 = target(2,2);
 
 theta_0 = pi/4; % an initial guess
-thre = 1e-12; 
+thre = 1e-6; 
 
-iter_count =0;
 while (1)
 
 A_mat = [];
@@ -37,7 +36,6 @@ x_vec = inv(A_mat'*A_mat) * A_mat' * b_vec;
 d_theta= x_vec(1);
 
 theta_0 = theta_0 + d_theta;
-iter_count = iter_count  + 1;
 
 if (abs(d_theta) < thre)
      break;
@@ -77,14 +75,12 @@ end
 rtk_std = [8e-3,8e-3,15e-3]; % unit: m
 leveling_std = [1.0,1.0]; % roll, pitch, unit: angular second
 %(make sure the leveling angle is as small as 1 second  by tuning the leveling bubble to locate it at the centre of the circle)
-leveling_std = leveling_std/(180/pi*3600); % unit: rad 
-
-count_correspondence = 8; % comment this line , use the actual number of back-sight points instead
+leveling_std = leveling_std/(190/pi*3600); % unit: rad 
 
 res_vec = A_mat*x_vec - b_vec;
 sigma2_posterior = 1/(2*count_correspondence-3) * res_vec' * res_vec;
-Cov_x = sigma2_posterior*pinv(A_mat' * A_mat); % yaw, tx, ty
-std2_tz = 1/count_correspondence * (rtk_std(3)^2);
+Cov_x = sigma2_posterior*A_mat' * A_mat; % yaw, tx, ty
+std2_tz = 1/count_correspondence * (rtk_std(3)^2;
 
 Cov_mat = zeros(6);
 Cov_mat(3:5, 3:5) = Cov_x;

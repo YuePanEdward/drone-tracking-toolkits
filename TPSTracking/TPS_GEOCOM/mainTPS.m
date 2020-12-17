@@ -5,6 +5,9 @@
 
 % TODO: add more comments, refine the code
 
+% Note! You shall open another matlab window for the automatic audio
+% triggering
+
 %%
 clear; clc; close all;
 addpath(['..' filesep '..' filesep 'common']);
@@ -12,6 +15,7 @@ mkdir ('results');
 
 %% Set GeoCOM port, dB (Baud) rate
 % For TPS1200, set it in configure->interfaces setting->GSI/GeoCOM mode on
+
 % For Nova TS 50/60, set it in (TODO)
 
 % COM port number (check in the device manager)
@@ -35,7 +39,7 @@ dB = 19200;
 % PRISM_MINI_ZERO = 8,
 % PRISM_USER = 9
 % PRISM_NDS_TAPE = 10
-prism_type = 7; 
+prism_type = 3; 
 
 %% Set TARGET TYPE
 % REFLECTOR_TARGET = 0
@@ -47,6 +51,8 @@ atr_state = 0; % ATR state on (1)
 
 %%
 % ANGLE MEASUREMENT TOLERANCE
+% The maximum resolution of the angle measurement system depends on the instrument accuracy class. If
+% smaller positioning tolerances are required, the positioning time can increase drastically.
 % For Nova TS-50/60
 % RANGE FROM 1[cc] ( =1.57079 E-06[ rad ], highest resolution, slowest) 
 % TO 100[cc] ( =1.57079 E-04[ rad ], lowest resolution, fastest)
@@ -70,16 +76,21 @@ v_tol = 1.57079e-04; % Vertical tolerance (moderate resolution)
 % CONT_REF_SYNCHRO = 10;
 % SINGLE_REF_PRECISE = 11;
 
-distmode =4; % Default distance mode (from BAP_SetMeasPrg)
+distmode =4; % Default distance mode (from BAP_SetMeasPrg)  4
  
 %% Open port, connect to TPS
 TPSport = ConnectTPS(COMPort, dB);
 
+%ts_start = TPSnow(TPSport); % in 12, out 34  (byte) , transmission time ~20ms; total consuming time ~42ms
+
 %% Configure TPS for measurements
-setPropertiesTPS(TPSport, prism_type, target_type, atr_state, hz_tol, v_tol);
+setPropertiesTPS(TPSport, prism_type, target_type, atr_state, hz_tol, v_tol); 
+
+% check face (if is face II, change to face I)
+% changeFace(TPSport);
 
 %% Begin tracking
-begin_time_str = datestr(now,'yyyymmddHHMMSS'); % get current time
+begin_time_str = datestr(now,'yyyymmddHHMMSS');  % get current time
 
 % figure for listening the keyboard event
 figure(1);
@@ -97,8 +108,7 @@ pause(1.0); % pause for 1 second
 meas_polar=[];
 meas_cart=[];
 meas_ts=[];
-pc_ts = [];
-meas_status =[]; %1: ok, 0: warning, -1: error
+meas_status =[];   %0: ok, 1: warning, 2: error, 3: fatal
 meas_count = 0;
 
 track_status = trackPrism(TPSport); % track the prism ?begining)
@@ -108,24 +118,31 @@ if(strcmpi(get(gcf,'CurrentCharacter'),'e'))
    pause(5.0);
 end
 
-% check face (if is face II, change to face I)
-% changeFace(TPSport);
-
 error_count=0; 
-error_count_thre=50;  % tolerance for the continous measurements with problem
+error_count_thre=50;  % tolerance for the continous measurements with problem % ~ 6 seconds
+
+ms_in_day = 1/24/3600/1000;
 
 % keep take measurements (both in polar and cartesian coordinate systems)
 while(1)
     
-    pause(0.001); % wait for 1 ms
-    
+     % to stop the tracking, press pause first, press [E] and then resume
+    if (meas_count > 1 && strcmpi(get(gcf,'CurrentCharacter'),'e')) 
+          disp('[E] is pressed, terminate the tracking.'); 
+          break;
+    end
+   
+    %pause(0.001); % wait for 1 ms
+         
     meas_count=meas_count+1;
     fprintf('Measurement [%s]\n',num2str(meas_count));
-    cur_pc_ts_str = datestr(now,'yyyymmddHHMMSSFFF'); % get timestamp on PC
-    cur_pc_ts = [str2double(cur_pc_ts_str(1:4)), str2double(cur_pc_ts_str(5:6)), str2double(cur_pc_ts_str(7:8)), str2double(cur_pc_ts_str(9:10)), str2double(cur_pc_ts_str(11:12)), str2double(cur_pc_ts_str(13:14)), str2double(cur_pc_ts_str(15:17))];
-     fprintf('PC commanding timestamp: %04.0f/%02.0f/%02.0f  %02.0f:%02.0f:%02.0f.%03.0f \n', cur_pc_ts(:));  % in second , resolution: 1ms
     
-    [D,Hr,V,cur_meas_ts,status] = getMeasurements(TPSport, distmode);
+    % take measurement
+    [D,Hr,V,cur_meas_ts,status] = getMeasurements(TPSport, distmode);   % in 14, out 68  (byte),  transmission time ~35ms , cnsuming time ~110ms
+    
+    % the following codes takes only about 1ms.
+    
+    % depend on the tracking status
     if (status==3 || error_count > error_count_thre) % fatal
         break; % don't record this error measurement
     elseif (status==2) % error
@@ -133,28 +150,23 @@ while(1)
     else   % warning or well
           error_count=0;  % restart the count
     end
+    
     meas_status = [meas_status; status];
     meas_polar = [meas_polar; [D,Hr,V]]; % in m, deg, deg
     [X,Y,Z]= polar2cart(D,Hr,V); % convert to cartesian coordinate system
-    fprintf('x = %.4f [m]; y = %.4f [m]; z = %.4f [m]\n',X,Y,Z); % in meter
+    
+    fprintf('x = %.3f [m]; y = %.3f [m]; z = %.3f [m]\n',X,Y,Z); % in meter
     meas_cart = [meas_cart; [X,Y,Z]]; % in m, m, m
+   
+    meas_ts = [meas_ts; cur_meas_ts]; % record the timestamp in datenum
+     
+%     if (status<2)  % warning or well   
+%          scatter3(X,Y,Z,20,'ro','filled'); % plot in real-time (took ~ 10ms, too much)
+%     end
     
-    if(meas_count > 1)
-         delta_t= 0.001 * abs(cur_meas_ts(end) - meas_ts(end,end));
-         fprintf('delta-t for this measurement = %.2f [second]\n',delta_t); % in second
-    end
-    meas_ts = [meas_ts; cur_meas_ts];
-    pc_ts = [pc_ts; cur_pc_ts];
-    % to stop the tracking, press pause first, press [E] and then resume
-    if (meas_count > 1 && strcmpi(get(gcf,'CurrentCharacter'),'e')) 
-        disp('[E] is pressed, terminate the tracking.'); 
-        break;
-    end
-    
-    if (status<2)  % warning or well
-         scatter3(X,Y,Z,20,'ro','filled'); % plot in real-time
-    end
-    
+%     if(meas_count==300)  % define a checking point
+%          ;
+%     end
 end
 
 %% save coordinates
@@ -162,27 +174,28 @@ mkdir ('results',  begin_time_str);
 save(['results' filesep begin_time_str filesep 'meas_cart_' begin_time_str '.mat'],'meas_cart');
 save(['results' filesep begin_time_str filesep 'meas_polar_' begin_time_str '.mat'],'meas_polar');
 save(['results' filesep begin_time_str filesep 'meas_ts_' begin_time_str '.mat'],'meas_ts');
-save(['results' filesep begin_time_str filesep 'pc_ts_' begin_time_str '.mat'],'pc_ts');
 save(['results' filesep begin_time_str filesep 'meas_status_' begin_time_str '.mat'],'meas_status');
 disp('Save done');
 
 %% plot results
-%begin_time_str='20201115165032'; %example string (indoor dataset1)
-%begin_time_str='20201115164739'; %example string (indoor dataset2)
 %begin_time_str='20201123173300';
-begin_time_str='20201125172042';
+begin_time_str='20201125172042'; %outdoor test 8
+%begin_time_str='20201211111908';
 load(['results' filesep begin_time_str filesep 'meas_cart_' begin_time_str '.mat'],'meas_cart');
 load(['results' filesep begin_time_str filesep 'meas_status_' begin_time_str '.mat'],'meas_status');
 load(['results' filesep begin_time_str filesep 'meas_ts_' begin_time_str '.mat'],'meas_ts');
 
-meas_ts_sec = meas_ts (:,1:6);
-meas_ts_sec(:,6) = meas_ts_sec(:,6) + 0.001 * meas_ts (:,7); % convert to [Year Month Day Hour Minute Second.]
-[meas_gps_week, meas_gps_sow, meas_gps_dow] = local2gps(meas_ts_sec, 1);
-meas_gps_sow_tracked = meas_gps_sow(meas_status<2); % select the timestamp with successful tracking
+meas_ts_vec = datevec(meas_ts); % [YYYY, MM, DD, hh, mm, ss.sss]
+time_origin = meas_ts(1); % important, project time origin
 
-% track_position=meas_cart;
-% track_position(:,1) = meas_cart(:,2);
-% track_position(:,2) = meas_cart(:,1);
+meas_ts_s_project = (meas_ts-time_origin)*24*3600; % shifted project time (unit: s)  
+
+% use gps2local instead. Convert all the other measurements to the central PC 's time system
+
+% meas_ts_sec = meas_ts (:,1:6);
+% meas_ts_sec(:,6) = meas_ts_sec(:,6) + 0.001 * meas_ts (:,7); % convert to [Year Month Day Hour Minute Second.]
+% [meas_gps_week, meas_gps_sow, meas_gps_dow] = local2gps(meas_ts_sec, 1);
+% meas_gps_sow_tracked = meas_gps_sow(meas_status<2); % select the timestamp with successful tracking
 
 % tracking trajectory
 figure(2);
@@ -191,30 +204,29 @@ hold on;
 plottraj(meas_cart, meas_status);
 grid on;
 axis equal;
-set(gca, 'Fontname', 'Times New Roman','FontSize',12);
-xlabel('X(m)','Fontname', 'Times New Roman','FontSize',14);
-ylabel('Y(m)','Fontname', 'Times New Roman','FontSize',14);
-zlabel('Z(m)','Fontname', 'Times New Roman','FontSize',14);
-legend('Total station', 'Start', 'End','Fontname', 'Times New Roman','FontSize',10);
-title('Tracking result','Fontname', 'Times New Roman','FontSize',16);
+set(gca, 'Fontname', 'Times New Roman','FontSize',16);
+xlabel('X(m)','Fontname', 'Times New Roman','FontSize',18);
+ylabel('Y(m)','Fontname', 'Times New Roman','FontSize',18);
+zlabel('Z(m)','Fontname', 'Times New Roman','FontSize',18);
+legend('Total station', 'Start', 'End','Fontname', 'Times New Roman','FontSize',20);
+title('Prism position measured by the total station','Fontname', 'Times New Roman','FontSize',24);
 
 % tracking status
 figure(3);
-plot(meas_gps_sow, meas_status, 'Linewidth', 2,'Color','r');
+plot(meas_ts_s_project, meas_status, 'Linewidth', 3);
 grid on;
-set(gca, 'Fontname', 'Times New Roman','FontSize',12);
+set(gca, 'Fontname', 'Times New Roman','FontSize',14);
 set(gca,'xticklabel',num2str((get(gca,'xtick'))'));  
-xlabel('GPS seconds of the week (s)','Fontname', 'Times New Roman','FontSize',14);
-ylabel('tracking status','Fontname', 'Times New Roman','FontSize',14);
+xlabel('Time (s)','Fontname', 'Times New Roman','FontSize',16);
+ylabel('tracking status','Fontname', 'Times New Roman','FontSize',16);
+%xlim([0,160]);
 ylim([0,3]);
 yticks([0,1,2,3]);
-title('Tracking status','Fontname', 'Times New Roman','FontSize',16);
+title('Tracking status','Fontname', 'Times New Roman','FontSize',20);
 
 %% TODO LISTS:
-% 7. check face left or face right
-% 8. set tracking tolerance
-% 9. GPS settings (time system)
 % 10. For each error code, directly refer to the meaning according to the
-% manual
-% 11. Even with error, don't directly stop, you can just add a status at
-% that point and leave the coordinates empty.
+% manual, check the manual !!!
+
+% Read Zan's paper carefully, figure out the actual accuracy of the
+% measurement timestamp (expected as 5ms)

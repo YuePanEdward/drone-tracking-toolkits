@@ -1,4 +1,4 @@
-function plottraj(PointList, PointStatus, EulerangleList, ...
+function plottraj(PointList, PointStatus, EulerangleList, CovList,...
 startPointColor,endPointColor,circleRadius,lineWidth, ...
 axisLength, show_attitude_step)
 %plottraj 
@@ -19,33 +19,43 @@ attitude_on=1;
 if(nargin<3)
     attitude_on=0;
 end
+cov_on=1;
 if(nargin<4)
+    cov_on=0;
+end
+if(nargin<5)
     startPointColor = [1,0,0];
     endPointColor = [0,1,0];
-    circleRadius=80;
-end
-if(nargin<6)
-    circleRadius=80;
+    circleRadius=100;
 end
 if(nargin<7)
-    lineWidth = 3;
+    circleRadius=100;
 end
 if(nargin<8)
+    lineWidth = 3;
+end
+if(nargin<9)
     % plot the attitude
-    axisLength = 0.25; 
+    axisLength = 0.3; 
 end
 
 [PointNUM, ~]  = size(PointList);
 
 if(nargin<9)
-    show_attitude_step = ceil(PointNUM / 500);
+    show_attitude_step = ceil(PointNUM / 1000);
 end
-lineWidth_axis= 0.8;
- 
+lineWidth_axis= 1.5;
+
+CovariancePointColor = [0.1,0.1,0.1];
+sphere_scale = 20;
+
 if(status_on) % only select those putative points
-    PointList = PointList(find(PointStatus<2),:); % warning or well 
+    PointList = PointList(find(PointStatus<2),:); % select only the measurments with the status warning or well 
     if(attitude_on)
           EulerangleList = EulerangleList(find(PointStatus<2),:); % warning or well 
+    end
+    if(cov_on)
+          CovList = CovList(find(PointStatus<2),:); % warning or well 
     end
 end  
 
@@ -60,6 +70,9 @@ hold on;
 colorStep = (endPointColor-startPointColor)/(PointNUM-1);
 for i=1:PointNUM-1
     plot3(PointList(i:i+1,1),PointList(i:i+1,2),PointList(i:i+1,3),'color',colorStep*(i-1)+startPointColor,'linewidth',lineWidth); 
+    if(cov_on)
+        ellipsoid(PointList(i,1),PointList(i,2),PointList(i,3),sphere_scale*sqrt(CovList{i}(1,1)),sphere_scale*sqrt(CovList{i}(2,2)),sphere_scale*sqrt(CovList{i}(3,3)),10);
+    end
     hold on;
     
     if  (attitude_on & mod(i, show_attitude_step) ==0 )

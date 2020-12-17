@@ -1,10 +1,10 @@
-function [tran_mat, status] = coor_sys_tran_svd(source, target)
+function [tran_mat, cov_mat, status] = coor_sys_tran_svd(source, target)
 % coor_sys_tran Function estimate the 6DOF rigid body transformation
 % from two point cloud (source to target) with pre-determined correspondence
 % Using singular value decomposition (SVD) closed-form solution
 % refer to [Horn, 1987]
 % input: source [n * 3] vector, target [n * 3] vector
-% output: tran_mat [3 * 4] matrix, status 0 or 1 (means rigid
+% output: tran_mat [3 * 4] matrix, cov_mat, status 0 or 1 (means rigid
 % transformation or not)
 
 status =1;
@@ -23,4 +23,5 @@ if(det(R_mat) < 0) % det(R_mat)==-1, mirror reverse transformation instead of ro
      status = 0;
 end
 
+cov_mat = 1e-3* eye(6); % TODO, deduce the accurate value
 end
