@@ -7,7 +7,7 @@ Supervisor: Dr. Cenek Albl, et al.
 
 ---
 
-[**[Presentation slide]**]([](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_presentation-YuePan-20201217.pdf)) [**[Report]**](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_report-YuePan-Measuring_Drone_Trajectory_using_Total.pdf)
+[**[Presentation slide]**](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_presentation-YuePan-20201217.pdf) [**[Report]**](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_report-YuePan-Measuring_Drone_Trajectory_using_Total.pdf)
 
 ----
 
