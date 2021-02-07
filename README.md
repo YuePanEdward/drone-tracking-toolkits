@@ -55,7 +55,7 @@ Run ```codes\postprocess\pose\get_drone_pose.m``` to estimate the drone's pose i
 
 [Drone tracking and trajectory reconstruction dataset](https://github.com/CenekAlbl/drone-tracking-datasets)
 
-[Reconstruction of 3D flight trajectories from ad-hoc camera networks (IROS '20)](https://arxiv.org/abs/2003.04784)[[Codes]]((https://github.com/CenekAlbl/mvus))
+[Reconstruction of 3D flight trajectories from ad-hoc camera networks (IROS '20)](https://arxiv.org/abs/2003.04784)[[Codes]](https://github.com/CenekAlbl/mvus)
 
 #### Acknowledgement:
 
