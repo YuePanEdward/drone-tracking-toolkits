@@ -7,7 +7,7 @@ Supervisor: Dr. Cenek Albl, et al.
 
 ---
 
-[**[Presentation slide]**]([](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_presentation-YuePan-20201217.pdf)) [**[Report]**](https://ethz.ch/content/dam/ethz/special-interest/baug/igp/photogrammetry-remote-sensing-dam/documents/pdf/Student_Theses/IPA_YuePan.pdf)
+[**[Presentation slide]**](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_presentation-YuePan-20201217.pdf) [**[Report]**](https://ethz.ch/content/dam/ethz/special-interest/baug/igp/photogrammetry-remote-sensing-dam/documents/pdf/Student_Theses/IPA_YuePan.pdf)
 
 ----
 
