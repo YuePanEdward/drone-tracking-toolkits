@@ -7,9 +7,15 @@ Supervisor: Dr. Cenek Albl, et al.
 
 ---
 
-[**[Presentation slide]**]([](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_presentation-YuePan-20201217.pdf)) [**[Report]**](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_report-YuePan-Measuring_Drone_Trajectory_using_Total.pdf)
+[**[Presentation slide]**]([](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/IPA_presentation-YuePan-20201217.pdf)) [**[Report]**](https://ethz.ch/content/dam/ethz/special-interest/baug/igp/photogrammetry-remote-sensing-dam/documents/pdf/Student_Theses/IPA_YuePan.pdf)
 
 ----
+
+### Abstract
+
+In this project, we managed to construct a **visual drone tracking and positioning dataset** collected by a multi-sensor system, including a **total station**, on-board sensor kits, and an ad-hoc **network of cameras**. 
+
+By leveraging high accuracy total station measurements and sensor fusion techniques such as the extended Kalman filter, the absolute positioning accuracy for the drone’s body center in the local frame can be better than **one centimeter**. By employing a radio-synchronized network of audio triggers, we can recognize the triggering pattern from the audio signal of each video, thus accomplishing the synchronization among the videos with sub-frame accuracy. The overall synchronization time delay of the system is about **10 milliseconds** after aligning all the measurements’ timestamp to the referenced PC time.
 
 ### Dataset acquired using the toolkit
 
@@ -18,7 +24,7 @@ Supervisor: Dr. Cenek Albl, et al.
 ![alt text](doc/imgs/dataset_overview.jpg)
 
 ### Frames overview
- ![alt text](doc/imgs/pose_overview.jpg)
+![alt text](doc/imgs/pose_overview.jpg)
 
 ### Synchronization overview
 ![alt text](doc/imgs/sync_overview.jpg)
