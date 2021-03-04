@@ -31,13 +31,38 @@ By leveraging high accuracy total station measurements and sensor fusion techniq
 
 -----
 
+### How to use:
+The codes are written in Matlab (R2019b). 
+
+0. **Prepare instruments** [(checklist)](https://github.com/YuePanEdward/drone-tracking-toolkits/blob/main/doc/experiment_checklist.pdf):
+
+Leica total station with GeoCOM
+
+Drone assembled with Pixhawk and Leica 360 ° prism
+
+Radio-synchronized network of audio triggers
+
+1. **Measurements on site**:
+
+Run ```codes\measure\tps_geocom\main_tps.m``` to realize total station tracking via [GeoCOM](http://webarchiv.ethz.ch/geometh-data/student/eg1/2010/02_deformation/TPS1200_GeoCOM_Manual.pdf).
+
+Run ```codes\measure\radio_sync\audio_trigger_auto.m``` to launch the radio-synchronized audio triggering system for joint synchronization.
+
+2. **Data post-processing**:
+
+Run ```codes\postprocess\pose\drone_data_loader.m``` to load the drone log file in [Pixhawk](https://pixhawk.org/) format.
+
+Run ```codes\postprocess\pose\get_tran_lt.m``` to accomplish resection (transformation from the total station frame to local ENU frame).
+
+Run ```codes\postprocess\pose\get_drone_pose.m``` to estimate the drone's pose in local ENU frame using total station and onboard sensors' measurements.
+
+-----
+
 #### Useful links:
 
-[The previous dataset](https://github.com/CenekAlbl/drone-tracking-datasets)
+[Drone tracking and trajectory reconstruction dataset](https://github.com/CenekAlbl/drone-tracking-datasets)
 
-[Codes for the visual trajectory drone reconstruction framework](https://github.com/CenekAlbl/mvus)
-
-[Reconstruction of 3D flight trajectories from ad-hoc camera networks (IROS '20)](https://arxiv.org/abs/2003.04784)
+[Reconstruction of 3D flight trajectories from ad-hoc camera networks (IROS '20)](https://arxiv.org/abs/2003.04784)[[Codes]](https://github.com/CenekAlbl/mvus)
 
 #### Acknowledgement:
 
