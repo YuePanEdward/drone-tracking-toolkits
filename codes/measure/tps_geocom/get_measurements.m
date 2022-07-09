@@ -1,4 +1,4 @@
-function [D, Hz, V, ts_meas_datenum, status] = get_measurments(TPSport, distmode)
+function [D, Hz, V, ts_meas_datenum, status] = get_measurements(TPSport, distmode)
 % get_measurments : get the measurements in spherical coordinate system with the timestamp
 % By Yue Pan @ ETHZ IGP
 % outputs:

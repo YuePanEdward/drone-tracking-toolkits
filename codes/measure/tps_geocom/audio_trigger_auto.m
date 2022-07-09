@@ -1,5 +1,5 @@
-% Automaticlly trigger the audio 
-% For the radio-synchronized network of audio triggers 
+% Automaticlly trigger the audio or flash signal
+% For the radio-synchronized network of audio/flash triggers 
 % By Yue Pan @ ETHZ IGP
 
 clear; clc;
@@ -7,6 +7,8 @@ clear; clc;
 % COM port number (check in the device manager)
 port = "COM6";  %on windows, check COM8 and COM10
 % port = '/dev/ttyUSB1';  %on Linux
+% On Linux, you need to firstly give the access to the ttyUSBx port by
+%  sudo chmod 666 /dev/ttyUSB0
 
 bd_rate = 115200; 
 

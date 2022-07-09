@@ -10,13 +10,13 @@ mkdir ('results');
 % For Nova TS 50/60, set it in (TODO)
 
 % COM port number (check in the device manager)
-% COMPort = '/dev/ttyUSB1';  %on Linux
-COMPort = 'COM4';            %on Windows
+COMPort = '/dev/ttyUSB3';  %on Linux
+% COMPort = 'COM4';            %on Windows
 
 % dB (Baud) rate
 % dB = 115200;
-dB = 19200;
-%dB=9600;
+%dB = 19200;
+dB=9600;
 
 %% Set PRSIM TYPE
 % PRISM_ROUND = 0,
@@ -72,7 +72,7 @@ set_properties_tps(TPSport, prism_type, target_type, atr_state, hz_tol, v_tol);
 
 %% Take measurement (Face I)
 begin_time_str = datestr(now,'yyyymmddHHMMSS'); % get current time
- [D,Hr,V,ts,status] = getMeasurements(TPSport, distmode);
+ [D,Hr,V,ts,status] = get_measurements(TPSport, distmode);
  [X1,Y1,Z1]= polar2cart(D,Hr,V); % convert to cartesian coordinate 
  fprintf('Face I: x = %.4f [m]; y = %.4f [m]; z = %.4f [m]\n',X1,Y1,Z1); % in meter
 
@@ -80,7 +80,7 @@ begin_time_str = datestr(now,'yyyymmddHHMMSS'); % get current time
 change_face(TPSport); 
 
 %% Take measurement (Face II)
- [D,Hr,V,ts,status] = getMeasurements(TPSport, distmode);
+ [D,Hr,V,ts,status] = get_measurements(TPSport, distmode);
  [X2,Y2,Z2]= polar2cart(D,Hr,V); % convert to cartesian coordinate system
   fprintf('Face II: x = %.4f [m]; y = %.4f [m]; z = %.4f [m]\n',X2,Y2,Z2); % in meter
   

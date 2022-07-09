@@ -25,7 +25,7 @@ mkdir ('results');
 
 % On Linux, you need to firstly give the access to the ttyUSBx port by
 %  sudo chmod 666 /dev/ttyUSB0
-COMPort = '/dev/ttyUSB3';  %on Linux
+COMPort = '/dev/ttyUSB2';  %on Linux
 % On Linux, you need to firstly give the access to the ttyUSBx port by
 %  sudo chmod 666 /dev/ttyUSB0
 
@@ -191,9 +191,7 @@ disp('Save done');
 %begin_time_str='20210104111312';  % example data 1
 %begin_time_str='20210119155250';  % example data 2 
 %begin_time_str='20220323162041'; % 0323_seq01 % In summer time
-%begin_time_str='20220323164133'; % 0323_seq02  % In summer time
-%begin_time_str='20220324164229'; % 0324_seq01  % In summer time
-begin_time_str='20220324170125'; % 0324_seq02  % In summer time
+%begin_time_str='20220323164133'; % 0323_seq02
 
 load(['results' filesep begin_time_str filesep 'meas_cart_' begin_time_str '.mat'],'meas_cart');
 load(['results' filesep begin_time_str filesep 'meas_status_' begin_time_str '.mat'],'meas_status');
